@@ -9,9 +9,9 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f0f;color:#e8e8e8;min-height:100vh;padding:2rem 1rem}
 .container{max-width:720px;margin:0 auto}
 .header{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid #2a2a2a}
-.header h1{font-size:22px;font-weight:600;color:#fff;display:flex;align-items:center;gap:10px}
+.header h1{font-size:22px;font-weight:600;color:#fff}
 .header p{font-size:14px;color:#888;margin-top:6px}
-.badge{background:#3C3489;color:#AFA9EC;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+.badge{background:#3C3489;color:#AFA9EC;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;margin-left:8px}
 .card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
 .sec-title{font-size:13px;font-weight:600;color:#ccc;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
 label{font-size:13px;color:#888;margin-bottom:6px;display:block}
@@ -25,7 +25,7 @@ textarea{resize:vertical}
 .field:last-child{margin-bottom:0}
 .key-row{display:flex;gap:8px;align-items:center}
 .key-row input{flex:1}
-.show-btn{background:transparent;border:1px solid #2a2a2a;border-radius:8px;padding:8px 14px;font-size:12px;color:#888;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s}
+.show-btn{background:transparent;border:1px solid #2a2a2a;border-radius:8px;padding:8px 14px;font-size:12px;color:#888;cursor:pointer;white-space:nowrap;font-family:inherit}
 .show-btn:hover{border-color:#444;color:#ccc}
 .hint{font-size:11px;color:#555;margin-top:4px}
 .tone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -37,20 +37,19 @@ textarea{resize:vertical}
 .check-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#888;cursor:pointer}
 .check-item input{width:auto;margin:0;cursor:pointer;accent-color:#534AB7}
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
-.gen-btn{width:100%;padding:13px;background:#534AB7;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s}
+.gen-btn{width:100%;padding:13px;background:#534AB7;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s}
 .gen-btn:hover{background:#3C3489}
 .gen-btn:disabled{background:#1a1a1a;color:#444;cursor:not-allowed;border:1px solid #2a2a2a}
-.pub-btn{width:100%;padding:13px;background:#0F6E56;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.15s}
+.pub-btn{width:100%;padding:13px;background:#0F6E56;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s}
 .pub-btn:hover{background:#085041}
 .pub-btn:disabled{background:#1a1a1a;color:#444;cursor:not-allowed;border:1px solid #2a2a2a}
 .output{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:1.25rem;min-height:200px}
 .out-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2a2a2a}
 .out-toolbar span{font-size:13px;font-weight:600;color:#ccc}
-.copy-btn{background:transparent;border:1px solid #2a2a2a;border-radius:8px;padding:5px 12px;font-size:12px;color:#888;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:all 0.15s}
+.copy-btn{background:transparent;border:1px solid #2a2a2a;border-radius:8px;padding:5px 12px;font-size:12px;color:#888;cursor:pointer;font-family:inherit}
 .copy-btn:hover{border-color:#444;color:#ccc}
 .out-content{font-size:14px;color:#ccc;line-height:1.8;white-space:pre-wrap;word-break:break-word}
 .placeholder{color:#444;font-size:14px;text-align:center;padding:3rem 0}
-.placeholder svg{display:block;margin:0 auto 12px;opacity:0.3}
 .dot{width:6px;height:6px;background:#7F77DD;border-radius:50%;display:inline-block;animation:pulse 1s infinite}
 .dot:nth-child(2){animation-delay:.2s}
 .dot:nth-child(3){animation-delay:.4s}
@@ -66,13 +65,11 @@ textarea{resize:vertical}
 <div class="container">
 
 <div class="header">
-  <h1>&#128248; Crime and Psyche Post Generator <span class="badge">AI + WordPress</span></h1>
+  <h1>Crime and Psyche Post Generator <span class="badge">AI + WordPress</span></h1>
   <p>Generate SEO-optimised true crime posts and publish straight to your WordPress drafts.</p>
 </div>
 
-<div class="banner" id="banner">
-  <span id="bannerMsg"></span>
-</div>
+<div class="banner" id="banner"><span id="bannerMsg"></span></div>
 
 <div class="card">
   <p class="sec-title">Anthropic API Key</p>
@@ -88,12 +85,16 @@ textarea{resize:vertical}
 <div class="card">
   <p class="sec-title">WordPress Connection</p>
   <div class="field">
-    <label>Royal MCP API Key</label>
+    <label>WordPress username</label>
+    <input type="text" id="wpUser" placeholder="e.g. dredredre27">
+  </div>
+  <div class="field">
+    <label>Application password</label>
     <div class="key-row">
-      <input type="password" id="mcpKey" placeholder="Paste your WordPress API key from Royal MCP settings">
-      <button type="button" class="show-btn" id="showMcpBtn">Show</button>
+      <input type="password" id="wpPass" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx">
+      <button type="button" class="show-btn" id="showWpBtn">Show</button>
     </div>
-    <p class="hint">WordPress → Royal MCP → Settings → WordPress API Key</p>
+    <p class="hint">WordPress &rarr; Users &rarr; Profile &rarr; Application Passwords</p>
   </div>
 </div>
 
@@ -171,19 +172,16 @@ textarea{resize:vertical}
 </div>
 
 <div class="btn-row">
-  <button type="button" class="gen-btn" id="generateBtn">&#10024; Generate post</button>
-  <button type="button" class="pub-btn" id="publishBtn" disabled>&#9998; Save to WordPress drafts</button>
+  <button type="button" class="gen-btn" id="generateBtn">Generate post</button>
+  <button type="button" class="pub-btn" id="publishBtn" disabled>Save to WordPress drafts</button>
 </div>
 
 <div class="output">
-  <div class="placeholder" id="placeholder">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-    Your generated post will appear here
-  </div>
+  <div class="placeholder" id="placeholder">Your generated post will appear here</div>
   <div id="outputContent" style="display:none">
     <div class="out-toolbar">
       <span id="outputLabel">Generated post</span>
-      <button type="button" class="copy-btn" id="copyBtn">&#128203; Copy all</button>
+      <button type="button" class="copy-btn" id="copyBtn">Copy all</button>
     </div>
     <div class="out-content" id="postText"></div>
   </div>
@@ -197,10 +195,13 @@ var generatedTitle='';
 
 function loadStored(id,key){try{var v=localStorage.getItem(key);if(v)document.getElementById(id).value=v;}catch(e){}}
 function saveStored(id,key){document.getElementById(id).addEventListener('input',function(){try{localStorage.setItem(key,this.value.trim());}catch(e){}});}
+
 loadStored('apiKey','cap_api_key');
-loadStored('mcpKey','cap_mcp_key');
+loadStored('wpUser','cap_wp_user');
+loadStored('wpPass','cap_wp_pass');
 saveStored('apiKey','cap_api_key');
-saveStored('mcpKey','cap_mcp_key');
+saveStored('wpUser','cap_wp_user');
+saveStored('wpPass','cap_wp_pass');
 
 function toggleShow(btnId,inputId){
   document.getElementById(btnId).addEventListener('click',function(){
@@ -210,7 +211,7 @@ function toggleShow(btnId,inputId){
   });
 }
 toggleShow('showApiBtn','apiKey');
-toggleShow('showMcpBtn','mcpKey');
+toggleShow('showWpBtn','wpPass');
 
 function countWords(str){return str.trim()===''?0:str.trim().split(/\s+/).length;}
 function truncateWords(str,max){var w=str.trim().split(/\s+/);return w.length<=max?str:w.slice(0,max).join(' ');}
@@ -282,7 +283,7 @@ async function generatePost(){
 
   var btn=document.getElementById('generateBtn');
   btn.disabled=true;
-  btn.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp; Generating...';
+  btn.textContent='Generating...';
   document.getElementById('publishBtn').disabled=true;
   document.getElementById('banner').style.display='none';
   document.getElementById('placeholder').style.display='none';
@@ -354,24 +355,27 @@ async function generatePost(){
   }
 
   btn.disabled=false;
-  btn.innerHTML='&#10024; Generate post';
+  btn.textContent='Generate post';
 }
 
 async function publishToWordPress(){
-  var mcpKey=document.getElementById('mcpKey').value.trim();
-  if(!mcpKey){alert('Please enter your Royal MCP API key.');return;}
+  var wpUser=document.getElementById('wpUser').value.trim();
+  var wpPass=document.getElementById('wpPass').value.trim();
+  if(!wpUser||!wpPass){alert('Please enter your WordPress username and application password.');return;}
   if(!generatedPost){alert('Please generate a post first.');return;}
 
   var pubBtn=document.getElementById('publishBtn');
   pubBtn.disabled=true;
-  pubBtn.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp; Publishing...';
+  pubBtn.textContent='Publishing...';
+
+  var credentials=btoa(wpUser+':'+wpPass);
 
   try{
-    var response=await fetch('https://crimeandpsyche.com/wp-json/royal-mcp/v1/posts',{
+    var response=await fetch('https://crimeandpsyche.com/wp-json/wp/v2/posts',{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'X-Royal-MCP-API-Key':mcpKey
+        'Authorization':'Basic '+credentials
       },
       body:JSON.stringify({
         title:generatedTitle,
@@ -387,22 +391,22 @@ async function publishToWordPress(){
 
     var postData=await response.json();
     var editUrl='https://crimeandpsyche.com/wp-admin/post.php?post='+(postData.id||'')+'&action=edit';
-    showBanner('success','Draft saved to WordPress! <a href="'+editUrl+'" target="_blank" style="color:#9FE1CB;font-weight:600;margin-left:6px">View draft &rarr;</a>');
+    showBanner('success','Draft saved! <a href="'+editUrl+'" target="_blank" style="color:#9FE1CB;font-weight:600;margin-left:6px">View in WordPress</a>');
 
   }catch(err){
-    showBanner('error','WordPress error: '+err.message+'. Make sure Royal MCP integration is enabled in your WordPress settings.');
+    showBanner('error','Error: '+err.message);
   }
 
   pubBtn.disabled=false;
-  pubBtn.innerHTML='&#9998; Save to WordPress drafts';
+  pubBtn.textContent='Save to WordPress drafts';
 }
 
 function copyPost(){
   if(!generatedPost)return;
   navigator.clipboard.writeText(generatedPost).then(function(){
     var btn=document.getElementById('copyBtn');
-    btn.innerHTML='&#10003; Copied!';
-    setTimeout(function(){btn.innerHTML='&#128203; Copy all';},2000);
+    btn.textContent='Copied!';
+    setTimeout(function(){btn.textContent='Copy all';},2000);
   });
 }
 </script>
