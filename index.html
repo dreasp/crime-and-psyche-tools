@@ -59,6 +59,9 @@ textarea{resize:vertical}
 .banner.success{background:#04342C;border:1px solid #0F6E56;color:#9FE1CB}
 .banner.error{background:#501313;border:1px solid #A32D2D;color:#F7C1C1}
 .divider{border:none;border-top:1px solid #2a2a2a;margin:0 0 1rem}
+.meta-box{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px;margin-bottom:1rem;font-size:12px;color:#888;display:none}
+.meta-box strong{color:#ccc;display:block;margin-bottom:4px}
+.meta-box p{color:#888;line-height:1.5}
 </style>
 </head>
 <body>
@@ -176,6 +179,13 @@ textarea{resize:vertical}
   <button type="button" class="pub-btn" id="publishBtn" disabled>Save to WordPress drafts</button>
 </div>
 
+<div class="meta-box" id="metaBox">
+  <strong>SEO Meta Title</strong>
+  <p id="metaTitle"></p>
+  <strong style="margin-top:8px">SEO Meta Description</strong>
+  <p id="metaDesc"></p>
+</div>
+
 <div class="output">
   <div class="placeholder" id="placeholder">Your generated post will appear here</div>
   <div id="outputContent" style="display:none">
@@ -192,10 +202,10 @@ textarea{resize:vertical}
 var selectedTone='investigative and serious';
 var generatedPost='';
 var generatedTitle='';
+var generatedHtml='';
 
 function loadStored(id,key){try{var v=localStorage.getItem(key);if(v)document.getElementById(id).value=v;}catch(e){}}
 function saveStored(id,key){document.getElementById(id).addEventListener('input',function(){try{localStorage.setItem(key,this.value.trim());}catch(e){}});}
-
 loadStored('apiKey','cap_api_key');
 loadStored('wpUser','cap_wp_user');
 loadStored('wpPass','cap_wp_pass');
@@ -244,6 +254,47 @@ function showBanner(type,msg){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+function markdownToHtml(md){
+  var html=md;
+  html=html.replace(/^SEO Meta Title:?\s*\*?\*?(.+)\*?\*?$/gim,'');
+  html=html.replace(/^\*\*SEO Meta Title:\*\*\s*(.+)$/gim,'');
+  html=html.replace(/^SEO Meta Description:?\s*\*?\*?(.+)\*?\*?$/gim,'');
+  html=html.replace(/^\*\*SEO Meta Description:\*\*\s*([\s\S]*?)(?=\n\n|\n#|$)/gim,'');
+  html=html.replace(/^#### (.+)$/gim,'<h4>$1</h4>');
+  html=html.replace(/^### (.+)$/gim,'<h3>$1</h3>');
+  html=html.replace(/^## (.+)$/gim,'<h2>$1</h2>');
+  html=html.replace(/^# (.+)$/gim,'<h1>$1</h1>');
+  html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  html=html.replace(/^---+$/gim,'<hr>');
+  var lines=html.split('\n');
+  var out=[];
+  var inList=false;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line){if(inList){out.push('</ul>');inList=false;}out.push('');continue;}
+    if(line.match(/^<h[1-6]>|^<hr>/)){if(inList){out.push('</ul>');inList=false;}out.push(line);continue;}
+    if(line.match(/^[-*] (.+)/)){
+      if(!inList){out.push('<ul>');inList=true;}
+      out.push('<li>'+line.replace(/^[-*] /,'')+'</li>');
+      continue;
+    }
+    if(inList){out.push('</ul>');inList=false;}
+    out.push('<p>'+line+'</p>');
+  }
+  if(inList)out.push('</ul>');
+  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+
+function extractMeta(text){
+  var titleMatch=text.match(/\*\*SEO Meta Title:\*\*\s*(.+)/i)||text.match(/SEO Meta Title:\s*(.+)/i);
+  var descMatch=text.match(/\*\*SEO Meta Description:\*\*\s*([\s\S]+?)(?=\n\n|\n\*\*|$)/i)||text.match(/SEO Meta Description:\s*([\s\S]+?)(?=\n\n|\n[A-Z]|$)/i);
+  return{
+    title:titleMatch?titleMatch[1].replace(/\*\*/g,'').trim():'',
+    desc:descMatch?descMatch[1].replace(/\*\*/g,'').trim():''
+  };
+}
+
 document.getElementById('generateBtn').addEventListener('click',generatePost);
 document.getElementById('publishBtn').addEventListener('click',publishToWordPress);
 document.getElementById('copyBtn').addEventListener('click',copyPost);
@@ -266,8 +317,8 @@ async function generatePost(){
   var inclSources=document.getElementById('inclSources').checked;
 
   var sections=[];
-  if(inclSeo)sections.push('SEO meta title and meta description clearly labelled at the top');
-  sections.push('An SEO-optimised H1 headline');
+  if(inclSeo)sections.push('SEO meta title and meta description clearly labelled at the top using exactly this format:\n**SEO Meta Title:** [title here]\n**SEO Meta Description:** [description here]');
+  sections.push('The article body starting with the introduction — do NOT include the H1 headline in the body, it is handled separately');
   sections.push('A compelling hook introduction (2-3 paragraphs)');
   if(inclTimeline)sections.push('Full chronological timeline with dated entries and subheadings');
   if(inclSuspects)sections.push('Key figures or suspects section');
@@ -279,18 +330,19 @@ async function generatePost(){
   sections.push('Strong conclusion');
 
   var targetLength=postType==='news update'?'500-800 words':'1500-2500 words';
-  var prompt='You are an expert true crime blogger and SEO writer. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nSEO: use case name naturally as focus keyword, subheadings as search queries, short paragraphs, human voice.\nFormat: markdown with ## main sections, ### subsections.\n\nIMPORTANT: Start with exactly: TITLE: [your H1 headline]\nThen blank line, then the full post.';
+  var prompt='You are an expert true crime blogger and SEO writer. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nSEO: use case name naturally as focus keyword, subheadings as search queries, short paragraphs, human voice.\nFormatting rules:\n- Use ## for main section headings\n- Use ### for subsection headings\n- Use **bold** for emphasis\n- Use - for bullet points\n- Do NOT use # (h1) anywhere in the body\n\nIMPORTANT: Start with exactly: TITLE: [your H1 headline]\nThen blank line, then the SEO meta section, then the article body.';
 
   var btn=document.getElementById('generateBtn');
   btn.disabled=true;
   btn.textContent='Generating...';
   document.getElementById('publishBtn').disabled=true;
   document.getElementById('banner').style.display='none';
+  document.getElementById('metaBox').style.display='none';
   document.getElementById('placeholder').style.display='none';
   document.getElementById('outputContent').style.display='block';
   document.getElementById('postText').textContent='';
   document.getElementById('outputLabel').textContent='Generating...';
-  generatedPost='';generatedTitle='';
+  generatedPost='';generatedTitle='';generatedHtml='';
 
   try{
     var response=await fetch('https://api.anthropic.com/v1/messages',{
@@ -345,6 +397,15 @@ async function generatePost(){
       generatedTitle=caseName;
       generatedPost=fullText;
     }
+
+    var meta=extractMeta(generatedPost);
+    if(meta.title||meta.desc){
+      document.getElementById('metaTitle').textContent=meta.title||'—';
+      document.getElementById('metaDesc').textContent=meta.desc||'—';
+      document.getElementById('metaBox').style.display='block';
+    }
+
+    generatedHtml=markdownToHtml(generatedPost);
     document.getElementById('postText').textContent=generatedPost;
     document.getElementById('outputLabel').textContent='Generated — ready to publish';
     document.getElementById('publishBtn').disabled=false;
@@ -362,7 +423,7 @@ async function publishToWordPress(){
   var wpUser=document.getElementById('wpUser').value.trim();
   var wpPass=document.getElementById('wpPass').value.trim();
   if(!wpUser||!wpPass){alert('Please enter your WordPress username and application password.');return;}
-  if(!generatedPost){alert('Please generate a post first.');return;}
+  if(!generatedHtml){alert('Please generate a post first.');return;}
 
   var pubBtn=document.getElementById('publishBtn');
   pubBtn.disabled=true;
@@ -379,7 +440,7 @@ async function publishToWordPress(){
       },
       body:JSON.stringify({
         title:generatedTitle,
-        content:generatedPost,
+        content:generatedHtml,
         status:'draft'
       })
     });
