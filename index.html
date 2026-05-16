@@ -61,6 +61,11 @@ textarea{resize:vertical}
 .divider{border:none;border-top:1px solid #2a2a2a;margin:0 0 1rem}
 .meta-box{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px;margin-bottom:1rem;font-size:12px;color:#888;display:none}
 .meta-box strong{color:#ccc;display:block;margin-bottom:4px}
+.meta-copy{cursor:pointer;padding:4px 6px;border-radius:4px;transition:background 0.15s}
+.meta-copy:hover{background:#2a2a2a}
+.meta-copy:active{background:#3a3a3a}
+.alt-item{cursor:pointer;padding:4px 6px;border-radius:4px;font-size:12px;color:#888;margin-bottom:3px;transition:background 0.15s;display:block}
+.alt-item:hover{background:#2a2a2a;color:#ccc}
 .meta-box p{color:#888;line-height:1.5}
 </style>
 </head>
@@ -192,13 +197,16 @@ textarea{resize:vertical}
 
 <div class="meta-box" id="metaBox">
   <strong>SEO Title</strong>
-  <p id="metaTitle"></p>
+  <p id="metaTitle" class="meta-copy" title="Click to copy"></p>
   <strong style="margin-top:8px">Meta Description</strong>
-  <p id="metaDesc"></p>
+  <p id="metaDesc" class="meta-copy" title="Click to copy"></p>
   <strong style="margin-top:8px">Slug (URL)</strong>
-  <p id="metaSlug"></p>
+  <p id="metaSlug" class="meta-copy" title="Click to copy"></p>
   <strong style="margin-top:8px">Focus Keyphrase</strong>
-  <p id="metaKeyphrase"></p>
+  <p id="metaKeyphrase" class="meta-copy" title="Click to copy"></p>
+  <strong style="margin-top:8px">Image Alt Text &amp; Title Guide</strong>
+  <p style="font-size:11px;color:#777;margin-bottom:6px">Click any line to copy. Customise the end to match each specific photo.</p>
+  <div id="metaAltTexts"></div>
 </div>
 
 <div class="output">
@@ -445,7 +453,48 @@ async function generatePost(){
     document.getElementById('metaDesc').textContent=generatedMeta||'—';
     document.getElementById('metaSlug').textContent=generatedSlug||'—';
     document.getElementById('metaKeyphrase').textContent=generatedKeyphrase||'—';
+
+    var kp=generatedKeyphrase||caseName.toLowerCase();
+    var cn=caseName;
+    var altSuggestions=[
+      kp+' — featured image',
+      kp+' — crime scene location',
+      kp+' — court trial 2026',
+      kp+' — suspect photo',
+      kp+' — victim photo',
+      cn+' documentary evidence',
+      cn+' case timeline'
+    ];
+    var altContainer=document.getElementById('metaAltTexts');
+    altContainer.innerHTML='';
+    altSuggestions.forEach(function(alt){
+      var span=document.createElement('span');
+      span.className='alt-item';
+      span.textContent=alt;
+      span.title='Click to copy';
+      span.addEventListener('click',function(){
+        navigator.clipboard.writeText(alt).then(function(){
+          var orig=span.textContent;
+          span.textContent='Copied!';
+          span.style.color='#9FE1CB';
+          setTimeout(function(){span.textContent=orig;span.style.color='';},1500);
+        });
+      });
+      altContainer.appendChild(span);
+    });
+
     document.getElementById('metaBox').style.display='block';
+
+    document.querySelectorAll('.meta-copy').forEach(function(el){
+      el.addEventListener('click',function(){
+        navigator.clipboard.writeText(el.textContent).then(function(){
+          var orig=el.textContent;
+          el.textContent='Copied!';
+          el.style.color='#9FE1CB';
+          setTimeout(function(){el.textContent=orig;el.style.color='';},1500);
+        });
+      });
+    });
 
     var ytUrl=document.getElementById('youtubeUrl').value.trim();
     var ytEmbed=getYoutubeEmbed(ytUrl);
