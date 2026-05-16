@@ -181,6 +181,7 @@ textarea{resize:vertical}
     <label class="check-item"><input type="checkbox" id="inclSeo" checked> SEO meta description</label>
     <label class="check-item"><input type="checkbox" id="inclFaq"> FAQ section</label>
     <label class="check-item"><input type="checkbox" id="inclSources"> Sources section</label>
+    <label class="check-item"><input type="checkbox" id="inclPsych"> Psychological analysis</label>
   </div>
 </div>
 
@@ -348,6 +349,7 @@ async function generatePost(){
   if(inclFaq)sections.push('FAQ with 4 commonly searched questions about this case');
   if(inclYoutube)sections.push('Call-to-action to watch the full story on the Crime and Psyche YouTube channel');
   if(inclSources)sections.push('Sources section with placeholder links');
+  if(inclPsych)sections.push('A psychological analysis section exploring the mindset, behavioural patterns, warning signs, and psychological profile involved in this case — written in an accessible but insightful way that connects to the Crime and Psyche brand identity of true crime through a psychological lens');
   sections.push('Strong conclusion');
 
   var targetLength=postType==='news update'?'500-800 words':'1500-2500 words';
