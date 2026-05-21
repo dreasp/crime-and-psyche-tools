@@ -428,7 +428,16 @@ async function generatePost(){
   sections.push('Background and key facts section');
   sections.push('Current status and latest developments');
   if(inclFaq)sections.push('FAQ with 4 commonly searched questions about this case');
-  if(inclYoutube)sections.push('Call-to-action to watch the full story on the Crime and Psyche YouTube channel');
+  var ytCta='';
+  if(inclYoutube){
+    var ytUrl=document.getElementById('youtubeUrl').value.trim();
+    if(ytUrl){
+      ytCta='A natural call-to-action to watch the full video on the Crime and Psyche YouTube channel. Embed or link to: '+ytUrl;
+    }else{
+      ytCta='A natural call-to-action paragraph inviting readers to subscribe to the Crime and Psyche YouTube channel at https://www.youtube.com/@crimeandpsyche for weekly true crime and psychology deep dives. Do not mention a specific video — just invite them to the channel.';
+    }
+    sections.push(ytCta);
+  }
   if(inclSources)sections.push('Sources section with placeholder links');
   if(inclPsych)sections.push('A psychological analysis section exploring the mindset, behavioural patterns, warning signs, and psychological profile involved in this case — written in an accessible but insightful way that connects to the Crime and Psyche brand identity of true crime through a psychological lens');
   sections.push('Strong conclusion');
@@ -441,7 +450,7 @@ async function generatePost(){
   var transcript=document.getElementById('transcript').value.trim();
 
   var focusKeyphrase=caseName.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-  var prompt='You are an expert true crime blogger and SEO writer. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
+  var prompt='You are an expert true crime blogger and SEO writer. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nCRIME AND PSYCHE TONE:\n- Empathy and gravity - real people real tragedies\n- No sensationalism or clickbait framing\n- Lead with human story not shock value\n- Connect behaviour to psychology and warning signs\n- Treat victims with dignity\n- Thoughtful investigator voice never voyeuristic\n- Reflective meaningful conclusions\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
 
   var btn=document.getElementById('generateBtn');
   btn.disabled=true;
