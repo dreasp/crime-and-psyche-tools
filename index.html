@@ -162,6 +162,13 @@ textarea{resize:vertical}
     <textarea id="transcript" style="min-height:200px" placeholder="Paste your video script or transcript here — up to 15,000 words..."></textarea>
     <div class="wc" id="transcriptWC">0 words (limit: 15,000)</div>
   </div>
+  <div class="field">
+    <label>Source URLs (optional — paste one URL per line)</label>
+    <textarea id="sourceUrls" style="min-height:80px" placeholder="https://www.cnn.com/article-about-case&#10;https://www.bbc.com/another-article"></textarea>
+    <p class="hint">The tool will fetch and extract key facts from these pages automatically.</p>
+    <button type="button" id="fetchBtn" style="margin-top:8px;background:#2a2a2a;border:1px solid #444;border-radius:8px;padding:8px 16px;font-size:13px;color:#ccc;cursor:pointer;font-family:inherit">Fetch articles</button>
+    <p id="fetchStatus" style="font-size:12px;color:#555;margin-top:6px"></p>
+  </div>
 </div>
 
 <div class="card">
@@ -333,6 +340,66 @@ function extractMeta(text){
   };
 }
 
+var fetchedContent='';
+
+async function fetchArticle(url){
+  try{
+    var proxyUrl='https://api.allorigins.win/get?url='+encodeURIComponent(url);
+    var response=await fetch(proxyUrl);
+    var data=await response.json();
+    if(!data.contents)return '';
+    // Strip HTML tags and clean up whitespace
+    var text=data.contents
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'')
+      .replace(/<[^>]+>/g,' ')
+      .replace(/&nbsp;/g,' ')
+      .replace(/&amp;/g,'&')
+      .replace(/&lt;/g,'<')
+      .replace(/&gt;/g,'>')
+      .replace(/&quot;/g,'"')
+      .replace(/\s{3,}/g,' ')
+      .trim();
+    // Take first 3000 words to stay within limits
+    var words=text.split(/\s+/).slice(0,3000);
+    return words.join(' ');
+  }catch(e){
+    return '';
+  }
+}
+
+document.getElementById('fetchBtn').addEventListener('click',async function(){
+  var urls=document.getElementById('sourceUrls').value.trim().split('\n').filter(function(u){return u.trim()!=='';});
+  if(!urls.length){alert('Please enter at least one URL.');return;}
+  var btn=document.getElementById('fetchBtn');
+  var status=document.getElementById('fetchStatus');
+  btn.disabled=true;
+  btn.textContent='Fetching...';
+  status.textContent='';
+  fetchedContent='';
+  var results=[];
+  for(var i=0;i<urls.length;i++){
+    var url=urls[i].trim();
+    status.textContent='Fetching article '+(i+1)+' of '+urls.length+'...';
+    var text=await fetchArticle(url);
+    if(text){
+      results.push('--- Source: '+url+' ---\n'+text);
+      status.style.color='#9FE1CB';
+      status.textContent='Fetched '+(i+1)+' of '+urls.length+' articles successfully.';
+    }else{
+      status.style.color='#F7C1C1';
+      status.textContent='Could not fetch: '+url+'. Try copying the article text manually.';
+    }
+  }
+  if(results.length){
+    fetchedContent=results.join('\n\n');
+    status.style.color='#9FE1CB';
+    status.textContent='Done! '+results.length+' article(s) fetched. Click Generate post to continue.';
+  }
+  btn.disabled=false;
+  btn.textContent='Fetch articles';
+});
+
 document.getElementById('generateBtn').addEventListener('click',generatePost);
 document.getElementById('publishBtn').addEventListener('click',publishToWordPress);
 document.getElementById('copyBtn').addEventListener('click',copyPost);
@@ -345,8 +412,6 @@ async function generatePost(){
 
   var caseType=document.getElementById('caseType').value;
   var postType=document.getElementById('postType').value;
-  var keyFacts=document.getElementById('keyFacts').value.trim();
-  var transcript=document.getElementById('transcript').value.trim();
   var inclTimeline=document.getElementById('inclTimeline').checked;
   var inclSuspects=document.getElementById('inclSuspects').checked;
   var inclYoutube=document.getElementById('inclYoutube').checked;
@@ -369,8 +434,14 @@ async function generatePost(){
   sections.push('Strong conclusion');
 
   var targetLength=postType==='news update'?'500-800 words':'1500-2500 words';
+  // Include fetched article content if available
+  var combinedSources='';
+  if(fetchedContent){combinedSources+='\nFetched article content (use as factual source, do not reproduce verbatim):\n'+fetchedContent+'\n';}
+  var keyFacts=document.getElementById('keyFacts').value.trim();
+  var transcript=document.getElementById('transcript').value.trim();
+
   var focusKeyphrase=caseName.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-  var prompt='You are an expert true crime blogger and SEO writer. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
+  var prompt='You are an expert true crime blogger and SEO writer. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
 
   var btn=document.getElementById('generateBtn');
   btn.disabled=true;
