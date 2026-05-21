@@ -300,6 +300,7 @@ function markdownToHtml(md){
   html=html.replace(/^# (.+)$/gim,'<h1>$1</h1>');
   html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   html=html.replace(/^---+$/gim,'<hr>');
   var lines=html.split('\n');
   var out=[];
@@ -434,7 +435,7 @@ async function generatePost(){
     if(ytUrl){
       ytCta='A natural call-to-action to watch the full video on the Crime and Psyche YouTube channel. Embed or link to: '+ytUrl;
     }else{
-      ytCta='A natural call-to-action paragraph inviting readers to subscribe to the Crime and Psyche YouTube channel at https://www.youtube.com/@crimeandpsyche for weekly true crime and psychology deep dives. Do not mention a specific video — just invite them to the channel.';
+      ytCta='A natural call-to-action paragraph inviting readers to subscribe to the Crime and Psyche YouTube channel. You MUST include a markdown hyperlink exactly like this: [Crime and Psyche YouTube channel](https://www.youtube.com/@crimeandpsyche) — this must be a clickable link in the text.';
     }
     sections.push(ytCta);
   }
