@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crime and Psyche — Post Generator</title>
+<title>Crime and Psyche - Post Generator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f0f;color:#e8e8e8;min-height:100vh;padding:2rem 1rem}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0f0f0f;color:#e8e8e8;min-height:100vh;padding:2rem 1rem}
 .container{max-width:720px;margin:0 auto}
 .header{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid #2a2a2a}
 .header h1{font-size:22px;font-weight:600;color:#fff}
@@ -61,9 +61,9 @@ textarea{resize:vertical}
 .divider{border:none;border-top:1px solid #2a2a2a;margin:0 0 1rem}
 .meta-box{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px;margin-bottom:1rem;font-size:12px;color:#888;display:none}
 .meta-box strong{color:#ccc;display:block;margin-bottom:4px}
+.meta-box p{color:#888;line-height:1.5}
 .meta-copy{cursor:pointer;padding:4px 6px;border-radius:4px;transition:background 0.15s}
 .meta-copy:hover{background:#2a2a2a}
-.meta-copy:active{background:#3a3a3a}
 .alt-item{cursor:pointer;padding:4px 6px;border-radius:4px;font-size:12px;color:#888;margin-bottom:3px;transition:background 0.15s;display:block}
 .alt-item:hover{background:#2a2a2a;color:#ccc}
 .url-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 0;word-break:break-all}
@@ -73,19 +73,15 @@ textarea{resize:vertical}
 .url-dot-ok{background:#0F6E56}
 .url-dot-fail{background:#A32D2D}
 #urlStatusList{margin-top:8px}
-.meta-box p{color:#888;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="container">
-
 <div class="header">
   <h1>Crime and Psyche Post Generator <span class="badge">AI + WordPress</span></h1>
   <p>Generate SEO-optimised true crime posts and publish straight to your WordPress drafts.</p>
 </div>
-
 <div class="banner" id="banner"><span id="bannerMsg"></span></div>
-
 <div class="card">
   <p class="sec-title">Anthropic API Key</p>
   <div class="field">
@@ -96,7 +92,6 @@ textarea{resize:vertical}
     <p class="hint">Get yours at console.anthropic.com</p>
   </div>
 </div>
-
 <div class="card">
   <p class="sec-title">WordPress Connection</p>
   <div class="field">
@@ -109,10 +104,10 @@ textarea{resize:vertical}
       <input type="password" id="wpPass" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx">
       <button type="button" class="show-btn" id="showWpBtn">Show</button>
     </div>
-    <p class="hint">WordPress &rarr; Users &rarr; Profile &rarr; Application Passwords</p>
+    <p class="hint">WordPress to Users to Profile to Application Passwords</p>
   </div>
 </div>
-
+<hr class="divider">
 <div class="card">
   <p class="sec-title">YouTube Video</p>
   <div class="field">
@@ -121,10 +116,6 @@ textarea{resize:vertical}
     <p class="hint">The video will be embedded automatically in the post.</p>
   </div>
 </div>
-
-
-<hr class="divider">
-
 <div class="card">
   <p class="sec-title">Case Details</p>
   <div class="field">
@@ -156,7 +147,6 @@ textarea{resize:vertical}
     </div>
   </div>
 </div>
-
 <div class="card">
   <p class="sec-title">What You Know</p>
   <div class="field">
@@ -166,24 +156,23 @@ textarea{resize:vertical}
   </div>
   <div class="field">
     <label>YouTube video transcript or notes</label>
-    <textarea id="transcript" style="min-height:200px" placeholder="Paste your video script or transcript here — up to 15,000 words..."></textarea>
+    <textarea id="transcript" style="min-height:180px" placeholder="Paste your video script or transcript here up to 15,000 words..."></textarea>
     <div class="wc" id="transcriptWC">0 words (limit: 15,000)</div>
   </div>
   <div class="field">
-    <label>Source URLs (optional — paste one URL per line)</label>
-    <textarea id="sourceUrls" style="min-height:80px" placeholder="https://www.cnn.com/article-about-case&#10;https://www.bbc.com/another-article"></textarea>
-    <p class="hint">The tool will fetch and extract key facts from these pages automatically.</p>
+    <label>Source URLs (optional - paste one URL per line)</label>
+    <textarea id="sourceUrls" style="min-height:80px" placeholder="https://www.cnn.com/article&#10;https://www.bbc.com/article"></textarea>
+    <p class="hint">The tool will try to fetch content from these pages automatically.</p>
     <button type="button" id="fetchBtn" style="margin-top:8px;background:#2a2a2a;border:1px solid #444;border-radius:8px;padding:8px 16px;font-size:13px;color:#ccc;cursor:pointer;font-family:inherit">Fetch articles</button>
     <p id="fetchStatus" style="font-size:12px;color:#555;margin-top:6px"></p>
     <div id="urlStatusList"></div>
   </div>
   <div class="field">
     <label>Additional notes / focus (optional)</label>
-    <textarea id="focusNotes" style="min-height:100px" placeholder="Tell the AI what to focus on or emphasise. e.g. 'Focus on the psychological manipulation aspect', 'Make sure to include details about the victim's background', 'Emphasise the failure of the justice system', 'Include the detail about the sister's testimony'..."></textarea>
-    <p class="hint">Use this to highlight specific angles, details, or sections you want the post to cover or expand on.</p>
+    <textarea id="focusNotes" style="min-height:100px" placeholder="Tell the AI what to focus on. e.g. Focus on the psychological manipulation aspect, include the sister testimony detail, emphasise the justice system failures..."></textarea>
+    <p class="hint">Use this to highlight specific angles or details you want covered.</p>
   </div>
 </div>
-
 <div class="card">
   <p class="sec-title">Writing Tone</p>
   <div class="tone-grid" id="toneGrid">
@@ -196,7 +185,6 @@ textarea{resize:vertical}
   </div>
   <p class="tone-label" id="toneLabel">Selected: Investigative</p>
 </div>
-
 <div class="card">
   <p class="sec-title">Include in the Post</p>
   <div class="checks">
@@ -209,12 +197,10 @@ textarea{resize:vertical}
     <label class="check-item"><input type="checkbox" id="inclPsych"> Psychological analysis</label>
   </div>
 </div>
-
 <div class="btn-row">
   <button type="button" class="gen-btn" id="generateBtn">Generate post</button>
   <button type="button" class="pub-btn" id="publishBtn" disabled>Save to WordPress drafts</button>
 </div>
-
 <div class="meta-box" id="metaBox">
   <strong>SEO Title</strong>
   <p id="metaTitle" class="meta-copy" title="Click to copy"></p>
@@ -228,7 +214,6 @@ textarea{resize:vertical}
   <p style="font-size:11px;color:#777;margin-bottom:6px">Click any line to copy. Customise the end to match each specific photo.</p>
   <div id="metaAltTexts"></div>
 </div>
-
 <div class="output">
   <div class="placeholder" id="placeholder">Your generated post will appear here</div>
   <div id="outputContent" style="display:none">
@@ -239,7 +224,6 @@ textarea{resize:vertical}
     <div class="out-content" id="postText"></div>
   </div>
 </div>
-
 </div>
 <script>
 var selectedTone='investigative and serious';
@@ -250,6 +234,7 @@ var generatedMeta='';
 var generatedSlug='';
 var generatedKeyphrase='';
 var generatedHtml='';
+var fetchedContent='';
 
 function loadStored(id,key){try{var v=localStorage.getItem(key);if(v)document.getElementById(id).value=v;}catch(e){}}
 function saveStored(id,key){document.getElementById(id).addEventListener('input',function(){try{localStorage.setItem(key,this.value.trim());}catch(e){}});}
@@ -301,22 +286,103 @@ function showBanner(type,msg){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+function cleanHtml(html){
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi,'')
+    .replace(/<style[\s\S]*?<\/style>/gi,'')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/&nbsp;/g,' ')
+    .replace(/&amp;/g,'&')
+    .replace(/&lt;/g,'<')
+    .replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"')
+    .replace(/\s{3,}/g,' ')
+    .trim()
+    .split(/\s+/).slice(0,3000).join(' ');
+}
+
+async function tryProxy(proxyUrl,responseHandler){
+  try{
+    var r=await fetch(proxyUrl,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok)return '';
+    var data=await responseHandler(r);
+    if(!data)return '';
+    return cleanHtml(data);
+  }catch(e){return '';}
+}
+
+async function fetchArticle(url){
+  var encoded=encodeURIComponent(url);
+  var t=await tryProxy('https://api.allorigins.win/get?url='+encoded,async function(r){var d=await r.json();return d.contents||'';});
+  if(t)return t;
+  t=await tryProxy('https://corsproxy.io/?url='+encoded,async function(r){return await r.text();});
+  if(t)return t;
+  t=await tryProxy('https://thingproxy.freeboard.io/fetch/'+url,async function(r){return await r.text();});
+  if(t)return t;
+  t=await tryProxy('https://api.allorigins.win/raw?url='+encoded,async function(r){return await r.text();});
+  if(t)return t;
+  return '';
+}
+
+document.getElementById('fetchBtn').addEventListener('click',async function(){
+  var urls=document.getElementById('sourceUrls').value.trim().split('\n').filter(function(u){return u.trim()!=='';});
+  if(!urls.length){alert('Please enter at least one URL.');return;}
+  var btn=document.getElementById('fetchBtn');
+  var status=document.getElementById('fetchStatus');
+  btn.disabled=true;
+  btn.textContent='Fetching...';
+  status.textContent='';
+  fetchedContent='';
+  var results=[];
+  var urlStatusList=document.getElementById('urlStatusList');
+  urlStatusList.innerHTML='';
+  var successCount=0;
+  var failCount=0;
+  for(var i=0;i<urls.length;i++){
+    var url=urls[i].trim();
+    status.style.color='#555';
+    status.textContent='Fetching article '+(i+1)+' of '+urls.length+'...';
+    var text=await fetchArticle(url);
+    var shortUrl=url.replace(/^https?:\/\//,'').split('/')[0];
+    var statusDiv=document.createElement('div');
+    statusDiv.className='url-status';
+    if(text){
+      results.push('--- Source: '+url+' ---\n'+text);
+      successCount++;
+      statusDiv.innerHTML='<span class="url-dot url-dot-ok"></span><span class="url-ok">'+shortUrl+' -- fetched ('+text.split(' ').length+' words)</span>';
+    }else{
+      failCount++;
+      statusDiv.innerHTML='<span class="url-dot url-dot-fail"></span><span class="url-fail">'+shortUrl+' -- all proxies failed. Copy article text manually.</span>';
+    }
+    urlStatusList.appendChild(statusDiv);
+  }
+  if(results.length){
+    fetchedContent=results.join('\n\n');
+    status.style.color='#9FE1CB';
+    status.textContent='Done: '+successCount+' fetched'+(failCount?' - '+failCount+' failed':'');
+  }else{
+    status.style.color='#F7C1C1';
+    status.textContent='No articles fetched. Copy text manually into Key Facts.';
+  }
+  btn.disabled=false;
+  btn.textContent='Fetch articles';
+});
+
 function markdownToHtml(md){
   var html=md;
-  // Remove em dashes — replace with comma or hyphen
-  html=html.replace(/—/g,',');
-  html=html.replace(/--/g,',');
   html=html.replace(/^SEO Meta Title:?\s*\*?\*?(.+)\*?\*?$/gim,'');
   html=html.replace(/^\*\*SEO Meta Title:\*\*\s*(.+)$/gim,'');
   html=html.replace(/^SEO Meta Description:?\s*\*?\*?(.+)\*?\*?$/gim,'');
   html=html.replace(/^\*\*SEO Meta Description:\*\*\s*([\s\S]*?)(?=\n\n|\n#|$)/gim,'');
+  html=html.replace(/\u2014/g,',');
+  html=html.replace(/--/g,',');
+  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   html=html.replace(/^#### (.+)$/gim,'<h4>$1</h4>');
   html=html.replace(/^### (.+)$/gim,'<h3>$1</h3>');
   html=html.replace(/^## (.+)$/gim,'<h2>$1</h2>');
   html=html.replace(/^# (.+)$/gim,'<h1>$1</h1>');
   html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
-  html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   html=html.replace(/^---+$/gim,'<hr>');
   var lines=html.split('\n');
   var out=[];
@@ -357,111 +423,6 @@ function extractMeta(text){
   };
 }
 
-var fetchedContent='';
-
-function cleanHtml(html){
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi,'')
-    .replace(/<style[\s\S]*?<\/style>/gi,'')
-    .replace(/<[^>]+>/g,' ')
-    .replace(/&nbsp;/g,' ')
-    .replace(/&amp;/g,'&')
-    .replace(/&lt;/g,'<')
-    .replace(/&gt;/g,'>')
-    .replace(/&quot;/g,'"')
-    .replace(/\s{3,}/g,' ')
-    .trim()
-    .split(/\s+/).slice(0,3000).join(' ');
-}
-
-async function tryProxy(proxyUrl,responseHandler){
-  try{
-    var r=await fetch(proxyUrl,{signal:AbortSignal.timeout(8000)});
-    if(!r.ok)return '';
-    var data=await responseHandler(r);
-    if(!data)return '';
-    return cleanHtml(data);
-  }catch(e){return '';}
-}
-
-async function fetchArticle(url){
-  var encoded=encodeURIComponent(url);
-
-  // Proxy 1: AllOrigins
-  var t=await tryProxy(
-    'https://api.allorigins.win/get?url='+encoded,
-    async function(r){var d=await r.json();return d.contents||'';}
-  );
-  if(t)return t;
-
-  // Proxy 2: corsproxy.io
-  t=await tryProxy(
-    'https://corsproxy.io/?url='+encoded,
-    async function(r){return await r.text();}
-  );
-  if(t)return t;
-
-  // Proxy 3: htmlpreview / thingproxy
-  t=await tryProxy(
-    'https://thingproxy.freeboard.io/fetch/'+url,
-    async function(r){return await r.text();}
-  );
-  if(t)return t;
-
-  // Proxy 4: allorigins raw
-  t=await tryProxy(
-    'https://api.allorigins.win/raw?url='+encoded,
-    async function(r){return await r.text();}
-  );
-  if(t)return t;
-
-  return '';
-}
-
-document.getElementById('fetchBtn').addEventListener('click',async function(){
-  var urls=document.getElementById('sourceUrls').value.trim().split('\n').filter(function(u){return u.trim()!=='';});
-  if(!urls.length){alert('Please enter at least one URL.');return;}
-  var btn=document.getElementById('fetchBtn');
-  var status=document.getElementById('fetchStatus');
-  btn.disabled=true;
-  btn.textContent='Fetching...';
-  status.textContent='';
-  fetchedContent='';
-  var results=[];
-  var urlStatusList=document.getElementById('urlStatusList');
-  urlStatusList.innerHTML='';
-  var successCount=0;
-  var failCount=0;
-  for(var i=0;i<urls.length;i++){
-    var url=urls[i].trim();
-    status.style.color='#555';
-    status.textContent='Fetching article '+(i+1)+' of '+urls.length+'...';
-    var text=await fetchArticle(url);
-    var shortUrl=url.replace(/^https?:\/\//,'').split('/')[0];
-    var statusDiv=document.createElement('div');
-    statusDiv.className='url-status';
-    if(text){
-      results.push('--- Source: '+url+' ---\n'+text);
-      successCount++;
-      statusDiv.innerHTML='<span class="url-dot url-dot-ok"></span><span class="url-ok">'+shortUrl+' — fetched successfully ('+text.split(' ').length+' words)</span>';
-    }else{
-      failCount++;
-      statusDiv.innerHTML='<span class="url-dot url-dot-fail"></span><span class="url-fail">'+shortUrl+' — all proxies failed. Copy article text manually into Key Facts.</span>';
-    }
-    urlStatusList.appendChild(statusDiv);
-  }
-  if(results.length){
-    fetchedContent=results.join('\n\n');
-    status.style.color='#9FE1CB';
-    status.textContent='Done: '+successCount+' fetched successfully'+(failCount?' · '+failCount+' failed':'')+'';
-  }else{
-    status.style.color='#F7C1C1';
-    status.textContent='No articles could be fetched. Try copying the text manually.';
-  }
-  btn.disabled=false;
-  btn.textContent='Fetch articles';
-});
-
 document.getElementById('generateBtn').addEventListener('click',generatePost);
 document.getElementById('publishBtn').addEventListener('click',publishToWordPress);
 document.getElementById('copyBtn').addEventListener('click',copyPost);
@@ -474,46 +435,45 @@ async function generatePost(){
 
   var caseType=document.getElementById('caseType').value;
   var postType=document.getElementById('postType').value;
+  var keyFacts=document.getElementById('keyFacts').value.trim();
+  var transcript=document.getElementById('transcript').value.trim();
+  var focusNotes=document.getElementById('focusNotes').value.trim();
   var inclTimeline=document.getElementById('inclTimeline').checked;
   var inclSuspects=document.getElementById('inclSuspects').checked;
   var inclYoutube=document.getElementById('inclYoutube').checked;
   var inclSeo=document.getElementById('inclSeo').checked;
   var inclFaq=document.getElementById('inclFaq').checked;
   var inclSources=document.getElementById('inclSources').checked;
+  var inclPsych=document.getElementById('inclPsych').checked;
+
+  var combinedSources='';
+  if(fetchedContent){combinedSources='\nFetched article content (use as factual source, do not reproduce verbatim):\n'+fetchedContent+'\n';}
+
+  var focusKeyphrase=caseName.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
 
   var sections=[];
-  if(inclSeo)sections.push('SEO meta title and meta description clearly labelled at the top using exactly this format:\n**SEO Meta Title:** [title here]\n**SEO Meta Description:** [description here]');
-  sections.push('The article body starting with the introduction — do NOT include the H1 headline in the body, it is handled separately');
-  sections.push('A compelling hook introduction (2-3 paragraphs) — must establish who this story is about by naming the key people involved in the first paragraph. Readers need to know who we are talking about immediately.');
+  if(inclSeo)sections.push('SEO meta title and meta description clearly labelled at the top using exactly: **SEO Meta Title:** [title] and **SEO Meta Description:** [description]');
+  sections.push('A compelling hook introduction (2-3 paragraphs) that names key people in the first paragraph');
   if(inclTimeline)sections.push('Full chronological timeline with dated entries and subheadings');
   if(inclSuspects)sections.push('Key figures or suspects section');
-  sections.push('Comprehensive background and key facts — must include full names of all victims and perpetrators, exact dates, location, what crime was committed, how it happened, and the outcome. Be specific and complete. Never omit names or key details.');
+  sections.push('Comprehensive background and key facts: full names of all victims and perpetrators, exact dates, location, what crime was committed, how it happened, and the outcome. Be specific. Never omit names or key details.');
   sections.push('Current status and latest developments');
+  if(inclPsych)sections.push('Psychological analysis section exploring mindset, behavioural patterns, warning signs, and psychological profile - written in an accessible insightful way connecting to the Crime and Psyche brand of true crime through a psychological lens');
   if(inclFaq)sections.push('FAQ with 4 commonly searched questions about this case');
-  var ytCta='';
   if(inclYoutube){
     var ytUrl=document.getElementById('youtubeUrl').value.trim();
     if(ytUrl){
-      ytCta='A natural call-to-action to watch the full video on the Crime and Psyche YouTube channel. Embed or link to: '+ytUrl;
+      sections.push('Call-to-action to watch the full story on Crime and Psyche YouTube channel. You MUST include a markdown hyperlink exactly like this: [Crime and Psyche YouTube channel]('+ytUrl+')');
     }else{
-      ytCta='A natural call-to-action paragraph inviting readers to subscribe to the Crime and Psyche YouTube channel. You MUST include a markdown hyperlink exactly like this: [Crime and Psyche YouTube channel](https://www.youtube.com/@crimeandpsyche) — this must be a clickable link in the text.';
+      sections.push('Call-to-action paragraph inviting readers to subscribe. You MUST include this exact markdown link: [Crime and Psyche YouTube channel](https://www.youtube.com/@crimeandpsyche) - this must be a clickable link.');
     }
-    sections.push(ytCta);
   }
-  if(inclSources)sections.push('Sources section with placeholder links');
-  if(inclPsych)sections.push('A psychological analysis section exploring the mindset, behavioural patterns, warning signs, and psychological profile involved in this case — written in an accessible but insightful way that connects to the Crime and Psyche brand identity of true crime through a psychological lens');
-  sections.push('Strong conclusion');
+  if(inclSources)sections.push('Sources section with links to credible sources used');
+  sections.push('Strong reflective conclusion');
 
   var targetLength=postType==='news update'?'500-800 words':'1500-2500 words';
-  // Include fetched article content if available
-  var combinedSources='';
-  if(fetchedContent){combinedSources+='\nFetched article content (use as factual source, do not reproduce verbatim):\n'+fetchedContent+'\n';}
-  var focusNotes=document.getElementById('focusNotes').value.trim();
-  var keyFacts=document.getElementById('keyFacts').value.trim();
-  var transcript=document.getElementById('transcript').value.trim();
 
-  var focusKeyphrase=caseName.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-  var prompt='You are an expert true crime blogger and SEO writer. Your absolute first priority is factual accuracy and completeness — readers must know exactly who was involved, what happened, when, where, and what the outcome was. Never omit names of victims, perpetrators, or key figures. Never skip over what the crime actually was. The psychological analysis and tone come after the facts are fully established. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+(focusNotes?'\nSPECIFIC FOCUS INSTRUCTIONS (prioritise these):\n'+focusNotes+'\n':'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nCRIME AND PSYCHE TONE:\n- Empathy and gravity - real people real tragedies\n- No sensationalism or clickbait framing\n- Lead with human story not shock value\n- Connect behaviour to psychology and warning signs\n- Treat victims with dignity\n- Thoughtful investigator voice never voyeuristic\n- Reflective meaningful conclusions\\n- NEVER use em dashes anywhere in the post. The em dash character is a known AI writing tell. Use commas, colons, parentheses, or rewrite the sentence to avoid it completely\\n- NEVER use these phrases that are known AI writing tells: "it is worth noting", "it is important to note", "delve into", "delve deeper", "in conclusion", "to summarize", "furthermore", "moreover", "nevertheless", "in the realm of", "stands as a testament", "underscores", "highlights the importance", "shed light on", "navigate", "landscape", "it goes without saying", "needless to say", "at the end of the day", "when it comes to"\\n- Do not start multiple consecutive sentences with "This"\\n- Avoid overly symmetrical or parallel sentence structures that feel formulaic\\n- Vary sentence length naturally — mix short punchy sentences with longer ones\\n- Write like a real person who is genuinely interested in this case, not like a report\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
+  var prompt='You are an expert true crime blogger and SEO writer. Your absolute first priority is factual accuracy: readers must know exactly who was involved, what happened, when, where, and what the outcome was. Never omit names of victims, perpetrators, or key figures. The psychological analysis and tone come after the facts are fully established. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+(focusNotes?'\nSPECIFIC FOCUS INSTRUCTIONS (prioritise these):\n'+focusNotes+'\n':'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS:\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase\n3. Include at least one outbound link to a credible source using markdown [anchor text](url)\n4. Write subheadings as questions people search for\n5. Keep most sentences under 20 words\n6. Use transition words: however, additionally, because, although, while, after, before, since, therefore, as a result\n7. Use active voice wherever possible\n8. Do not start 3 or more consecutive sentences with the same word\n\nFORMATTING:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nCRIME AND PSYCHE TONE:\n- Empathy and gravity: real people, real tragedies\n- No sensationalism or clickbait\n- Lead with the human story\n- Connect behaviour to psychology and warning signs\n- Treat victims with dignity\n- Thoughtful investigator voice, never voyeuristic\n- Reflective meaningful conclusions\n- NEVER use em dashes. Use commas, colons, or rewrite the sentence\n- Avoid hollow phrases: it is worth noting, it is important to note, delve into, in the realm of, it goes without saying\n- Write like a real engaged person, not a report\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
 
   var btn=document.getElementById('generateBtn');
   btn.disabled=true;
@@ -525,7 +485,7 @@ async function generatePost(){
   document.getElementById('outputContent').style.display='block';
   document.getElementById('postText').textContent='';
   document.getElementById('outputLabel').textContent='Generating...';
-  generatedPost='';generatedTitle='';generatedHtml='';
+  generatedPost='';generatedTitle='';generatedSeoTitle='';generatedMeta='';generatedSlug='';generatedKeyphrase='';generatedHtml='';
 
   try{
     var response=await fetch('https://api.anthropic.com/v1/messages',{
@@ -592,21 +552,20 @@ async function generatePost(){
       .replace(/^KEYPHRASE:\s*.+\n?/m,'')
       .trim();
 
-    document.getElementById('metaTitle').textContent=generatedSeoTitle||'—';
-    document.getElementById('metaDesc').textContent=generatedMeta||'—';
-    document.getElementById('metaSlug').textContent=generatedSlug||'—';
-    document.getElementById('metaKeyphrase').textContent=generatedKeyphrase||'—';
+    document.getElementById('metaTitle').textContent=generatedSeoTitle||'--';
+    document.getElementById('metaDesc').textContent=generatedMeta||'--';
+    document.getElementById('metaSlug').textContent=generatedSlug||'--';
+    document.getElementById('metaKeyphrase').textContent=generatedKeyphrase||'--';
 
     var kp=generatedKeyphrase||caseName.toLowerCase();
-    var cn=caseName;
     var altSuggestions=[
-      kp+' — featured image',
-      kp+' — crime scene location',
-      kp+' — court trial 2026',
-      kp+' — suspect photo',
-      kp+' — victim photo',
-      cn+' documentary evidence',
-      cn+' case timeline'
+      kp+' featured image',
+      kp+' crime scene location',
+      kp+' court trial 2026',
+      kp+' suspect photo',
+      kp+' victim photo',
+      caseName+' documentary evidence',
+      caseName+' case timeline'
     ];
     var altContainer=document.getElementById('metaAltTexts');
     altContainer.innerHTML='';
@@ -643,7 +602,7 @@ async function generatePost(){
     var ytEmbed=getYoutubeEmbed(ytUrl);
     generatedHtml=(ytEmbed?ytEmbed+'':'')+markdownToHtml(generatedPost);
     document.getElementById('postText').textContent=generatedPost;
-    document.getElementById('outputLabel').textContent='Generated — ready to publish';
+    document.getElementById('outputLabel').textContent='Generated -- ready to publish';
     document.getElementById('publishBtn').disabled=false;
 
   }catch(err){
@@ -678,11 +637,7 @@ async function publishToWordPress(){
         title:generatedTitle,
         content:generatedHtml,
         status:'draft',
-        slug:generatedSlug,
-        meta:{},
-        yoast_head_json:{},
-        excerpt:{raw:''},
-        'yoast_seo':{focuskw:generatedKeyphrase,metadesc:generatedMeta,title:generatedSeoTitle}
+        slug:generatedSlug
       })
     });
 
