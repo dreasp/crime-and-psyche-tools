@@ -66,6 +66,13 @@ textarea{resize:vertical}
 .meta-copy:active{background:#3a3a3a}
 .alt-item{cursor:pointer;padding:4px 6px;border-radius:4px;font-size:12px;color:#888;margin-bottom:3px;transition:background 0.15s;display:block}
 .alt-item:hover{background:#2a2a2a;color:#ccc}
+.url-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 0;word-break:break-all}
+.url-ok{color:#9FE1CB}
+.url-fail{color:#F7C1C1}
+.url-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.url-dot-ok{background:#0F6E56}
+.url-dot-fail{background:#A32D2D}
+#urlStatusList{margin-top:8px}
 .meta-box p{color:#888;line-height:1.5}
 </style>
 </head>
@@ -168,6 +175,12 @@ textarea{resize:vertical}
     <p class="hint">The tool will fetch and extract key facts from these pages automatically.</p>
     <button type="button" id="fetchBtn" style="margin-top:8px;background:#2a2a2a;border:1px solid #444;border-radius:8px;padding:8px 16px;font-size:13px;color:#ccc;cursor:pointer;font-family:inherit">Fetch articles</button>
     <p id="fetchStatus" style="font-size:12px;color:#555;margin-top:6px"></p>
+    <div id="urlStatusList"></div>
+  </div>
+  <div class="field">
+    <label>Additional notes / focus (optional)</label>
+    <textarea id="focusNotes" style="min-height:100px" placeholder="Tell the AI what to focus on or emphasise. e.g. 'Focus on the psychological manipulation aspect', 'Make sure to include details about the victim's background', 'Emphasise the failure of the justice system', 'Include the detail about the sister's testimony'..."></textarea>
+    <p class="hint">Use this to highlight specific angles, details, or sections you want the post to cover or expand on.</p>
   </div>
 </div>
 
@@ -379,23 +392,35 @@ document.getElementById('fetchBtn').addEventListener('click',async function(){
   status.textContent='';
   fetchedContent='';
   var results=[];
+  var urlStatusList=document.getElementById('urlStatusList');
+  urlStatusList.innerHTML='';
+  var successCount=0;
+  var failCount=0;
   for(var i=0;i<urls.length;i++){
     var url=urls[i].trim();
+    status.style.color='#555';
     status.textContent='Fetching article '+(i+1)+' of '+urls.length+'...';
     var text=await fetchArticle(url);
+    var shortUrl=url.replace(/^https?:\/\//,'').split('/')[0];
+    var statusDiv=document.createElement('div');
+    statusDiv.className='url-status';
     if(text){
       results.push('--- Source: '+url+' ---\n'+text);
-      status.style.color='#9FE1CB';
-      status.textContent='Fetched '+(i+1)+' of '+urls.length+' articles successfully.';
+      successCount++;
+      statusDiv.innerHTML='<span class="url-dot url-dot-ok"></span><span class="url-ok">'+shortUrl+' — fetched successfully</span>';
     }else{
-      status.style.color='#F7C1C1';
-      status.textContent='Could not fetch: '+url+'. Try copying the article text manually.';
+      failCount++;
+      statusDiv.innerHTML='<span class="url-dot url-dot-fail"></span><span class="url-fail">'+shortUrl+' — could not fetch (try copying text manually)</span>';
     }
+    urlStatusList.appendChild(statusDiv);
   }
   if(results.length){
     fetchedContent=results.join('\n\n');
     status.style.color='#9FE1CB';
-    status.textContent='Done! '+results.length+' article(s) fetched. Click Generate post to continue.';
+    status.textContent='Done: '+successCount+' fetched successfully'+(failCount?' · '+failCount+' failed':'')+'';
+  }else{
+    status.style.color='#F7C1C1';
+    status.textContent='No articles could be fetched. Try copying the text manually.';
   }
   btn.disabled=false;
   btn.textContent='Fetch articles';
@@ -447,11 +472,12 @@ async function generatePost(){
   // Include fetched article content if available
   var combinedSources='';
   if(fetchedContent){combinedSources+='\nFetched article content (use as factual source, do not reproduce verbatim):\n'+fetchedContent+'\n';}
+  var focusNotes=document.getElementById('focusNotes').value.trim();
   var keyFacts=document.getElementById('keyFacts').value.trim();
   var transcript=document.getElementById('transcript').value.trim();
 
   var focusKeyphrase=caseName.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-  var prompt='You are an expert true crime blogger and SEO writer. Your absolute first priority is factual accuracy and completeness — readers must know exactly who was involved, what happened, when, where, and what the outcome was. Never omit names of victims, perpetrators, or key figures. Never skip over what the crime actually was. The psychological analysis and tone come after the facts are fully established. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nCRIME AND PSYCHE TONE:\n- Empathy and gravity - real people real tragedies\n- No sensationalism or clickbait framing\n- Lead with human story not shock value\n- Connect behaviour to psychology and warning signs\n- Treat victims with dignity\n- Thoughtful investigator voice never voyeuristic\n- Reflective meaningful conclusions\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
+  var prompt='You are an expert true crime blogger and SEO writer. Your absolute first priority is factual accuracy and completeness — readers must know exactly who was involved, what happened, when, where, and what the outcome was. Never omit names of victims, perpetrators, or key figures. Never skip over what the crime actually was. The psychological analysis and tone come after the facts are fully established. Write a complete publish-ready '+postType+' blog post.\n\nCase: '+caseName+'\nFocus keyphrase: '+focusKeyphrase+'\nType: '+caseType+'\nTone: '+selectedTone+'\nLength: '+targetLength+'\n'+(keyFacts?'\nKey facts:\n'+keyFacts+'\n':'')+(transcript?'\nTranscript:\n'+transcript+'\n':'')+(combinedSources?combinedSources:'')+(focusNotes?'\nSPECIFIC FOCUS INSTRUCTIONS (prioritise these):\n'+focusNotes+'\n':'')+'\nSections in order:\n'+sections.map(function(s,i){return(i+1)+'. '+s;}).join('\n')+'\n\nCRITICAL SEO REQUIREMENTS (all mandatory):\n1. Focus keyphrase must appear naturally in the FIRST paragraph\n2. At least one H2 or H3 must contain the focus keyphrase or close variant\n3. Include at least one outbound link to a credible source (news outlet, court records) using markdown [anchor text](url)\n4. Write subheadings as questions people actually search for\n5. Short paragraphs 3-4 sentences max\n6. Human voice throughout\n\nFormatting:\n- ## for main headings\n- ### for subheadings\n- **bold** for key names and facts\n- - for bullet points\n- No # h1 in body\n\nCRIME AND PSYCHE TONE:\n- Empathy and gravity - real people real tragedies\n- No sensationalism or clickbait framing\n- Lead with human story not shock value\n- Connect behaviour to psychology and warning signs\n- Treat victims with dignity\n- Thoughtful investigator voice never voyeuristic\n- Reflective meaningful conclusions\n\nStart your response with ALL of these on separate lines:\nTITLE: [compelling H1 containing focus keyphrase max 60 chars]\nSEO_TITLE: [SEO title with focus keyphrase max 55 chars]\nMETA: [meta description with focus keyphrase max 150 chars]\nSLUG: [hyphenated url slug max 50 chars]\nKEYPHRASE: [exact focus keyphrase]\n\nThen blank line then full post body.';
 
   var btn=document.getElementById('generateBtn');
   btn.disabled=true;
