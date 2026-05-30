@@ -359,30 +359,63 @@ function extractMeta(text){
 
 var fetchedContent='';
 
-async function fetchArticle(url){
+function cleanHtml(html){
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi,'')
+    .replace(/<style[\s\S]*?<\/style>/gi,'')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/&nbsp;/g,' ')
+    .replace(/&amp;/g,'&')
+    .replace(/&lt;/g,'<')
+    .replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"')
+    .replace(/\s{3,}/g,' ')
+    .trim()
+    .split(/\s+/).slice(0,3000).join(' ');
+}
+
+async function tryProxy(proxyUrl,responseHandler){
   try{
-    var proxyUrl='https://api.allorigins.win/get?url='+encodeURIComponent(url);
-    var response=await fetch(proxyUrl);
-    var data=await response.json();
-    if(!data.contents)return '';
-    // Strip HTML tags and clean up whitespace
-    var text=data.contents
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'')
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'')
-      .replace(/<[^>]+>/g,' ')
-      .replace(/&nbsp;/g,' ')
-      .replace(/&amp;/g,'&')
-      .replace(/&lt;/g,'<')
-      .replace(/&gt;/g,'>')
-      .replace(/&quot;/g,'"')
-      .replace(/\s{3,}/g,' ')
-      .trim();
-    // Take first 3000 words to stay within limits
-    var words=text.split(/\s+/).slice(0,3000);
-    return words.join(' ');
-  }catch(e){
-    return '';
-  }
+    var r=await fetch(proxyUrl,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok)return '';
+    var data=await responseHandler(r);
+    if(!data)return '';
+    return cleanHtml(data);
+  }catch(e){return '';}
+}
+
+async function fetchArticle(url){
+  var encoded=encodeURIComponent(url);
+
+  // Proxy 1: AllOrigins
+  var t=await tryProxy(
+    'https://api.allorigins.win/get?url='+encoded,
+    async function(r){var d=await r.json();return d.contents||'';}
+  );
+  if(t)return t;
+
+  // Proxy 2: corsproxy.io
+  t=await tryProxy(
+    'https://corsproxy.io/?url='+encoded,
+    async function(r){return await r.text();}
+  );
+  if(t)return t;
+
+  // Proxy 3: htmlpreview / thingproxy
+  t=await tryProxy(
+    'https://thingproxy.freeboard.io/fetch/'+url,
+    async function(r){return await r.text();}
+  );
+  if(t)return t;
+
+  // Proxy 4: allorigins raw
+  t=await tryProxy(
+    'https://api.allorigins.win/raw?url='+encoded,
+    async function(r){return await r.text();}
+  );
+  if(t)return t;
+
+  return '';
 }
 
 document.getElementById('fetchBtn').addEventListener('click',async function(){
@@ -410,10 +443,10 @@ document.getElementById('fetchBtn').addEventListener('click',async function(){
     if(text){
       results.push('--- Source: '+url+' ---\n'+text);
       successCount++;
-      statusDiv.innerHTML='<span class="url-dot url-dot-ok"></span><span class="url-ok">'+shortUrl+' — fetched successfully</span>';
+      statusDiv.innerHTML='<span class="url-dot url-dot-ok"></span><span class="url-ok">'+shortUrl+' — fetched successfully ('+text.split(' ').length+' words)</span>';
     }else{
       failCount++;
-      statusDiv.innerHTML='<span class="url-dot url-dot-fail"></span><span class="url-fail">'+shortUrl+' — could not fetch (try copying text manually)</span>';
+      statusDiv.innerHTML='<span class="url-dot url-dot-fail"></span><span class="url-fail">'+shortUrl+' — all proxies failed. Copy article text manually into Key Facts.</span>';
     }
     urlStatusList.appendChild(statusDiv);
   }
