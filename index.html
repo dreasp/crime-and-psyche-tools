@@ -544,13 +544,47 @@ async function generatePost(){
     generatedSlug=slugMatch?slugMatch[1].trim().replace(/[^a-z0-9-]/g,''):caseName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
     generatedKeyphrase=keyphraseMatch?keyphraseMatch[1].trim():caseName.toLowerCase();
 
-    generatedPost=fullText
+    var rawPost=fullText
       .replace(/^TITLE:\s*.+\n?/m,'')
       .replace(/^SEO_TITLE:\s*.+\n?/m,'')
       .replace(/^META:\s*.+\n?/m,'')
       .replace(/^SLUG:\s*.+\n?/m,'')
       .replace(/^KEYPHRASE:\s*.+\n?/m,'')
       .trim();
+
+    // Second pass: rewrite to fix readability issues
+    document.getElementById('outputLabel').textContent='Polishing readability...';
+    document.getElementById('postText').textContent=rawPost+' [Polishing...]';
+    try{
+      var rewritePrompt='You are a writing editor. Rewrite the following true crime blog post to fix these specific readability issues:\n1. CONSECUTIVE SENTENCES: Find any place where 3 or more sentences in a row start with the same word. Rewrite those sentences so no 2 consecutive sentences start with the same word.\n2. PASSIVE VOICE: Reduce passive voice to under 10%. Convert passive constructions to active. Example: change "he was arrested by police" to "police arrested him".\n3. TRANSITION WORDS: At least 30% of sentences must contain transition words like: however, although, because, since, after, before, while, when, therefore, as a result, in addition, despite, even though, meanwhile, for example, in contrast. Add transition words naturally where missing.\n4. SUBHEADINGS: If any section has more than 300 words without a subheading, add a relevant ### subheading to break it up.\nDo NOT change the content, facts, structure, markdown formatting, links, or SEO elements. Only fix the four issues above. Return ONLY the rewritten post with no commentary.\n\nPOST TO REWRITE:\n'+rawPost;
+
+      var r2=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key":apiKey,
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true"
+        },
+        body:JSON.stringify({
+          model:"claude-sonnet-4-5",
+          max_tokens:8000,
+          messages:[{role:"user",content:rewritePrompt}]
+        })
+      });
+      if(r2.ok){
+        var d2=await r2.json();
+        if(d2.content&&d2.content[0]&&d2.content[0].text){
+          generatedPost=d2.content[0].text.trim();
+        }else{
+          generatedPost=rawPost;
+        }
+      }else{
+        generatedPost=rawPost;
+      }
+    }catch(e){
+      generatedPost=rawPost;
+    }
 
     document.getElementById('metaTitle').textContent=generatedSeoTitle||'--';
     document.getElementById('metaDesc').textContent=generatedMeta||'--';
