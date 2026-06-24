@@ -640,8 +640,10 @@ async function generatePost(){
 
     var ytUrl=document.getElementById('youtubeUrl').value.trim();
     var ytEmbed=getYoutubeEmbed(ytUrl);
-    generatedHtml=(ytEmbed?ytEmbed+'':'')+markdownToHtml(generatedPost);
-    document.getElementById('postText').textContent=generatedPost;
+    document.getElementById('outputLabel').textContent='Building Further Reading section...';
+    var furtherReadingHtml=await buildFurtherReading(apiKey,caseName,caseType,generatedPost);
+    generatedHtml=(ytEmbed?ytEmbed+'':'')+markdownToHtml(generatedPost)+furtherReadingHtml;
+    document.getElementById('postText').textContent=generatedPost+(furtherReadingHtml ? '\n\n--- Further Reading & Resources section has been appended to the post ---' : '');
     document.getElementById('outputLabel').textContent='Generated -- ready to publish';
     document.getElementById('publishBtn').disabled=false;
 
@@ -706,6 +708,118 @@ function copyPost(){
     setTimeout(function(){btn.textContent='Copy all';},2000);
   });
 }
+
+// ---- AMAZON AFFILIATE FURTHER READING ----
+var AMAZON_TAG='crimeandpsy0d-20';
+
+var EVERGREEN_BOOKS={
+  'serial killer':[
+    {asin:'0671013750',title:'Mindhunter',author:'John Douglas',desc:'The FBI profiler who pioneered criminal psychology tells the stories behind his most notorious cases.'},
+    {asin:'0062227564',title:'Without Conscience',author:'Robert Hare',desc:'The definitive guide to psychopathy by the leading expert in the field.'}
+  ],
+  'murder':[
+    {asin:'0385537598',title:'The Gift of Fear',author:'Gavin de Becker',desc:'How to recognise the warning signs of violence before it happens.'},
+    {asin:'0385537484',title:'I\'ll Be Gone in the Dark',author:'Michelle McNamara',desc:'A masterwork of true crime investigation and obsession.'}
+  ],
+  'cold case':[
+    {asin:'0385537484',title:'I\'ll Be Gone in the Dark',author:'Michelle McNamara',desc:'A masterwork of true crime investigation and obsession.'},
+    {asin:'1594634084',title:'Lost Girls',author:'Robert Kolker',desc:'A victim-centred investigation into a serial killer\'s forgotten victims.'}
+  ],
+  'disappearance':[
+    {asin:'1594634084',title:'Lost Girls',author:'Robert Kolker',desc:'A victim-centred investigation into cases of missing women.'},
+    {asin:'0385537598',title:'The Gift of Fear',author:'Gavin de Becker',desc:'How to recognise the warning signs of violence before it happens.'}
+  ],
+  'mass violence':[
+    {asin:'0446546925',title:'Columbine',author:'Dave Cullen',desc:'The definitive account of the Columbine tragedy and its lasting aftermath.'},
+    {asin:'1101984597',title:'A Mother\'s Reckoning',author:'Sue Klebold',desc:'A mother shares her experience of grief, guilt, and understanding after tragedy.'}
+  ],
+  'trial':[
+    {asin:'0062227564',title:'Without Conscience',author:'Robert Hare',desc:'The definitive guide to psychopathy by the leading expert in the field.'},
+    {asin:'0385537598',title:'The Gift of Fear',author:'Gavin de Becker',desc:'How to recognise the warning signs of violence before it happens.'}
+  ],
+  'unsolved':[
+    {asin:'0385537484',title:'I\'ll Be Gone in the Dark',author:'Michelle McNamara',desc:'A masterwork of true crime investigation and obsession.'},
+    {asin:'1594634084',title:'Lost Girls',author:'Robert Kolker',desc:'A victim-centred investigation into cases of missing women.'}
+  ],
+  'fraud/scam':[
+    {asin:'0767915828',title:'The Psychopath Test',author:'Jon Ronson',desc:'A journey through the madness industry, from corporate psychopaths to criminal minds.'},
+    {asin:'0385537598',title:'The Gift of Fear',author:'Gavin de Becker',desc:'How to recognise the warning signs of violence before it happens.'}
+  ],
+  'other':[
+    {asin:'0671013750',title:'Mindhunter',author:'John Douglas',desc:'The FBI profiler who pioneered criminal psychology tells the stories behind his most notorious cases.'},
+    {asin:'0385537598',title:'The Gift of Fear',author:'Gavin de Becker',desc:'How to recognise the warning signs of violence before it happens.'}
+  ]
+};
+
+function buildAmazonUrl(asin){
+  return 'https://www.amazon.com/dp/'+asin+'/?tag='+AMAZON_TAG;
+}
+
+function buildBookCardHtml(book,isPlaceholder){
+  var url=isPlaceholder?'#PASTE_AFFILIATE_LINK_HERE':buildAmazonUrl(book.asin);
+  var imgUrl='https://images-na.ssl-images-amazon.com/images/P/'+book.asin+'.01.MZZZZZZZ.jpg';
+  var html='<div style="border:1px solid #e0e0e0;border-radius:6px;padding:16px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;">';
+  html+='<a href="'+url+'" target="_blank" rel="nofollow noopener" style="flex-shrink:0;">';
+  html+='<img src="'+imgUrl+'" alt="'+book.title+' book cover" style="width:60px;height:auto;border-radius:3px;" onerror="this.style.display=\'none\'">';
+  html+='</a>';
+  html+='<div>';
+  html+='<a href="'+url+'" target="_blank" rel="nofollow noopener" style="font-weight:700;color:#1a1a1a;text-decoration:none;font-size:15px;">'+book.title+'</a>';
+  html+='<p style="font-size:13px;color:#555;margin:2px 0;">by '+book.author+'</p>';
+  html+='<p style="font-size:13px;color:#333;margin-top:6px;">'+book.desc+'</p>';
+  if(isPlaceholder){html+='<p style="font-size:11px;color:#c04040;margin-top:4px;">Replace #PASTE_AFFILIATE_LINK_HERE with your SiteStripe link</p>';}
+  html+='</div></div>';
+  return html;
+}
+
+async function buildFurtherReading(apiKey,caseName,caseType,postContent){
+  try{
+    var evergreen=EVERGREEN_BOOKS[caseType]||EVERGREEN_BOOKS['other'];
+    var evergreenHtml='';
+    for(var i=0;i<evergreen.length;i++){evergreenHtml+=buildBookCardHtml(evergreen[i],false);}
+
+    var suggestionPrompt='You are a true crime book expert. Based on this case: "'+caseName+'", suggest 1 or 2 specific books directly relevant to this exact case, perpetrator, or victim. These must be real published books available on Amazon. For each book output exactly:\nBOOK_TITLE: [title]\nBOOK_AUTHOR: [author]\nBOOK_DESC: [one sentence on why relevant, max 20 words]\n\nDo not suggest: Mindhunter, Without Conscience, The Gift of Fear, Lost Girls, Columbine, The Psychopath Test, I\'ll Be Gone in the Dark, A Mother\'s Reckoning. Return only the entries with labels, no commentary.';
+
+    var suggestedHtml='';
+    try{
+      var r=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:400,messages:[{role:'user',content:suggestionPrompt}]})
+      });
+      if(r.ok){
+        var d=await r.json();
+        var txt=d.content&&d.content[0]?d.content[0].text:'';
+        var lines=txt.split('\n');
+        var curBook=null;
+        for(var j=0;j<lines.length;j++){
+          var line=lines[j].trim();
+          if(line.startsWith('BOOK_TITLE:')){
+            if(curBook&&curBook.title&&curBook.author){suggestedHtml+=buildBookCardHtml(curBook,true);}
+            curBook={title:line.replace('BOOK_TITLE:','').trim(),author:'',desc:'',asin:'PLACEHOLDER'};
+          }else if(line.startsWith('BOOK_AUTHOR:')&&curBook){
+            curBook.author=line.replace('BOOK_AUTHOR:','').trim();
+          }else if(line.startsWith('BOOK_DESC:')&&curBook){
+            curBook.desc=line.replace('BOOK_DESC:','').trim();
+          }
+        }
+        if(curBook&&curBook.title&&curBook.author){suggestedHtml+=buildBookCardHtml(curBook,true);}
+      }
+    }catch(e2){}
+
+    var disclosure='<p style="font-size:11px;color:#888;margin-top:16px;padding-top:12px;border-top:1px solid #e0e0e0;font-style:italic;">Disclosure: This post contains affiliate links. If you purchase a product through one of these links, Crime and Psyche may earn a small commission at no extra cost to you. Thank you for supporting the channel.</p>';
+
+    return '\n\n<div style="background:#f9f9f7;border:1px solid #e0ddd8;border-radius:8px;padding:24px;margin-top:40px;">'
+      +'<h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">Further Reading</h2>'
+      +'<p style="font-size:14px;color:#555;margin-bottom:20px;">If this case sparked your curiosity, these books explore similar themes in depth.</p>'
+      +evergreenHtml
+      +(suggestedHtml?'<h3 style="font-size:15px;font-weight:600;margin:20px 0 12px;color:#333;">Specific to This Case</h3>'+suggestedHtml:'')
+      +disclosure
+      +'</div>';
+  }catch(e){
+    return '';
+  }
+}
+// ---- END AMAZON AFFILIATE ----
 </script>
 </body>
 </html>
