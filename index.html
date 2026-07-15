@@ -6,6 +6,23 @@
 <title>Crime and Psyche - Post Generator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+.saved-bar{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:12px 16px;margin-bottom:1rem;display:none;}
+.saved-bar-title{font-size:11px;font-weight:600;color:#7F77DD;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.saved-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;}
+.saved-item:last-child{border-bottom:none;}
+.saved-item-name{font-size:13px;color:#aaa;flex:1;}
+.saved-item-date{font-size:11px;color:#555;margin-right:12px;}
+.restore-btn{background:transparent;border:1px solid #534AB7;border-radius:6px;padding:4px 12px;font-size:11px;color:#AFA9EC;cursor:pointer;font-family:inherit;}
+.restore-btn:hover{background:#534AB722;}
+.yoast-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:1.25rem;margin-bottom:1rem;display:none;}
+.repolish-btn{width:100%;padding:11px;background:#1a3a2a;color:#9FE1CB;border:1px solid #0F6E56;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;margin-top:10px;}
+.repolish-btn:hover{background:#0F6E56;color:#fff;}
+.repolish-btn:disabled{background:#1a1a1a;color:#444;border-color:#2a2a2a;cursor:not-allowed;}
+.fix-summary{background:#0a2a1a;border:1px solid #0F6E56;border-radius:8px;padding:12px 16px;margin-top:12px;font-size:13px;color:#9FE1CB;display:none;}
+.fix-summary strong{display:block;margin-bottom:6px;color:#4AE896;}
+.fix-summary ul{padding-left:18px;margin:0;}
+.fix-summary li{margin-bottom:4px;}
+
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0f0f0f;color:#e8e8e8;min-height:100vh;padding:2rem 1rem}
 .container{max-width:720px;margin:0 auto}
 .header{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid #2a2a2a}
@@ -203,6 +220,10 @@ textarea{resize:vertical}
     <label class="check-item"><input type="checkbox" id="inclPsych"> Psychological analysis</label>
   </div>
 </div>
+<div class="saved-bar" id="savedBar">
+  <div class="saved-bar-title">&#x1F552; Recent Generations (click Restore to reload after refresh)</div>
+  <div id="savedList"></div>
+</div>
 <div class="btn-row">
   <button type="button" class="gen-btn" id="generateBtn">Generate post</button>
   <button type="button" class="pub-btn" id="publishBtn" disabled>Save to WordPress drafts</button>
@@ -228,6 +249,16 @@ textarea{resize:vertical}
       <button type="button" class="copy-btn" id="copyBtn">Copy all</button>
     </div>
     <div class="out-content" id="postText"></div>
+  </div>
+</div>
+<div class="yoast-box" id="yoastBox">
+  <p class="sec-title">Yoast SEO Feedback</p>
+  <label style="font-size:13px;color:#888;display:block;margin-bottom:6px;">Paste the red or orange issues from Yoast below, then click Re-polish. Only those specific problems will be fixed without regenerating the whole post.</label>
+  <textarea id="yoastFeedback" style="min-height:90px" placeholder="e.g. Consecutive sentences begin with the same word. Passive voice: 18% of sentences. Transition words: only 22% contain them..."></textarea>
+  <button type="button" class="repolish-btn" id="repolishBtn">Re-polish based on Yoast feedback</button>
+  <div class="fix-summary" id="fixSummary">
+    <strong>&#x2705; What was fixed:</strong>
+    <ul id="fixList"></ul>
   </div>
 </div>
 </div>
@@ -646,6 +677,10 @@ async function generatePost(){
     document.getElementById('postText').textContent=generatedPost+(furtherReadingHtml ? '\n\n--- Further Reading & Resources section has been appended to the post ---' : '');
     document.getElementById('outputLabel').textContent='Generated -- ready to publish';
     document.getElementById('publishBtn').disabled=false;
+    saveGeneration(caseName,generatedPost,generatedTitle,generatedSeoTitle,generatedMeta,generatedSlug,generatedKeyphrase,generatedHtml);
+    document.getElementById('yoastBox').style.display='block';
+    document.getElementById('yoastFeedback').value='';
+    document.getElementById('fixSummary').style.display='none';
 
   }catch(err){
     document.getElementById('postText').innerHTML='<span style="color:#F7C1C1;font-size:13px">Error: '+err.message+'</span>';
@@ -699,6 +734,140 @@ async function publishToWordPress(){
   pubBtn.disabled=false;
   pubBtn.textContent='Save to WordPress drafts';
 }
+
+
+// ---- SAVED GENERATIONS ----
+var SAVED_KEY='cap_saved_generations';
+
+function saveGeneration(caseName,post,title,seoTitle,meta,slug,keyphrase,html){
+  try{
+    var saved=JSON.parse(localStorage.getItem(SAVED_KEY)||'[]');
+    var entry={caseName:caseName,post:post,title:title,seoTitle:seoTitle,meta:meta,slug:slug,keyphrase:keyphrase,html:html,date:new Date().toLocaleString()};
+    saved.unshift(entry);
+    if(saved.length>2)saved=saved.slice(0,2);
+    localStorage.setItem(SAVED_KEY,JSON.stringify(saved));
+    renderSavedBar();
+  }catch(e){}
+}
+
+function renderSavedBar(){
+  try{
+    var saved=JSON.parse(localStorage.getItem(SAVED_KEY)||'[]');
+    var bar=document.getElementById('savedBar');
+    var list=document.getElementById('savedList');
+    if(!saved.length){bar.style.display='none';return;}
+    bar.style.display='block';
+    list.innerHTML='';
+    saved.forEach(function(entry,i){
+      var div=document.createElement('div');
+      div.className='saved-item';
+      div.innerHTML='<span class="saved-item-name">'+entry.caseName+'</span>'
+        +'<span class="saved-item-date">'+entry.date+'</span>'
+        +'<button class="restore-btn" onclick="restoreGeneration('+i+')">Restore</button>';
+      list.appendChild(div);
+    });
+  }catch(e){}
+}
+
+function restoreGeneration(index){
+  try{
+    var saved=JSON.parse(localStorage.getItem(SAVED_KEY)||'[]');
+    var entry=saved[index];
+    if(!entry)return;
+    generatedPost=entry.post;
+    generatedTitle=entry.title;
+    generatedSeoTitle=entry.seoTitle;
+    generatedMeta=entry.meta;
+    generatedSlug=entry.slug;
+    generatedKeyphrase=entry.keyphrase;
+    generatedHtml=entry.html;
+    document.getElementById('caseName').value=entry.caseName;
+    document.getElementById('postText').textContent=generatedPost;
+    document.getElementById('outputContent').style.display='block';
+    document.getElementById('placeholder').style.display='none';
+    document.getElementById('outputLabel').textContent='Restored: '+entry.caseName;
+    document.getElementById('metaTitle').textContent=generatedSeoTitle||'--';
+    document.getElementById('metaDesc').textContent=generatedMeta||'--';
+    document.getElementById('metaSlug').textContent=generatedSlug||'--';
+    document.getElementById('metaKeyphrase').textContent=generatedKeyphrase||'--';
+    document.getElementById('metaBox').style.display='block';
+    document.getElementById('publishBtn').disabled=false;
+    document.getElementById('yoastBox').style.display='block';
+    document.getElementById('yoastFeedback').value='';
+    document.getElementById('fixSummary').style.display='none';
+    window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  }catch(e){}
+}
+
+renderSavedBar();
+// ---- END SAVED GENERATIONS ----
+
+// ---- YOAST RE-POLISH ----
+document.getElementById('repolishBtn').addEventListener('click',async function(){
+  var apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){alert('Please enter your Anthropic API key.');return;}
+  if(!generatedPost){alert('No post to re-polish. Generate or restore a post first.');return;}
+  var feedback=document.getElementById('yoastFeedback').value.trim();
+  if(!feedback){alert('Please paste your Yoast feedback first.');return;}
+
+  var btn=document.getElementById('repolishBtn');
+  btn.disabled=true;
+  btn.textContent='Re-polishing...';
+  document.getElementById('outputLabel').textContent='Applying Yoast fixes...';
+  document.getElementById('fixSummary').style.display='none';
+
+  var repolishPrompt='You are a writing editor fixing specific SEO and readability issues flagged by Yoast SEO.\n\nYOAST ISSUES TO FIX:\n'+feedback+'\n\nINSTRUCTIONS:\n1. Fix ONLY the issues listed above. Do not change facts, structure, headings, links, SEO metadata, or anything not related to the issues.\n2. After fixing, output a brief summary of exactly what you changed using this format:\nFIX_SUMMARY_START\n- [what you fixed and where in the post]\n- [another fix]\nFIX_SUMMARY_END\n3. Then output the complete corrected post.\n\nPOST TO FIX:\n'+generatedPost;
+
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:8000,messages:[{role:'user',content:repolishPrompt}]})
+    });
+    if(r.ok){
+      var d=await r.json();
+      if(d.content&&d.content[0]&&d.content[0].text){
+        var fullResponse=d.content[0].text.trim();
+
+        // Extract fix summary
+        var summaryMatch=fullResponse.match(/FIX_SUMMARY_START([\s\S]*?)FIX_SUMMARY_END/);
+        if(summaryMatch){
+          var summaryLines=summaryMatch[1].trim().split('\n').filter(function(l){return l.trim();});
+          var fixList=document.getElementById('fixList');
+          fixList.innerHTML='';
+          summaryLines.forEach(function(line){
+            var li=document.createElement('li');
+            li.textContent=line.replace(/^-\s*/,'');
+            fixList.appendChild(li);
+          });
+          document.getElementById('fixSummary').style.display='block';
+        }
+
+        // Extract post (everything after FIX_SUMMARY_END)
+        var postStart=fullResponse.indexOf('FIX_SUMMARY_END');
+        var fixedPost=postStart>-1?fullResponse.slice(postStart+'FIX_SUMMARY_END'.length).trim():fullResponse;
+
+        generatedPost=fixedPost;
+        var ytUrl=document.getElementById('youtubeUrl').value.trim();
+        var ytEmbed=getYoutubeEmbed(ytUrl);
+        var frIdx=generatedHtml.indexOf('\n\n<div style');
+        var furtherReadingHtml=frIdx>-1?generatedHtml.slice(frIdx):'';
+        generatedHtml=(ytEmbed?ytEmbed+'':'')+markdownToHtml(generatedPost)+furtherReadingHtml;
+        document.getElementById('postText').textContent=generatedPost;
+        document.getElementById('outputLabel').textContent='Re-polished -- check the fix summary below';
+        document.getElementById('yoastFeedback').value='';
+        saveGeneration(document.getElementById('caseName').value.trim(),generatedPost,generatedTitle,generatedSeoTitle,generatedMeta,generatedSlug,generatedKeyphrase,generatedHtml);
+      }
+    }else{
+      document.getElementById('outputLabel').textContent='Re-polish failed -- try again';
+    }
+  }catch(e){
+    document.getElementById('outputLabel').textContent='Error: '+e.message;
+  }
+  btn.disabled=false;
+  btn.textContent='Re-polish based on Yoast feedback';
+});
+// ---- END YOAST RE-POLISH ----
 
 function copyPost(){
   if(!generatedPost)return;
