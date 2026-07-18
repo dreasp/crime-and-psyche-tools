@@ -744,6 +744,39 @@ Output format: write the full article first, then the metadata fields at the end
       else { wbcKeyInput.type = "password"; btn.textContent = "Show"; }
     }
 
+    function cleanArticleText(text) {
+      let t = text.trim();
+      // Drop any AI preamble before the first heading or --- separator
+      const dashIdx = t.indexOf("---");
+      const hashIdx = t.indexOf("# ");
+      if (dashIdx !== -1 && dashIdx < 400) t = t.slice(dashIdx + 3);
+      else if (hashIdx > 0 && hashIdx < 400) t = t.slice(hashIdx);
+      return t.trim();
+    }
+
+    function markdownToHtml(md) {
+      const lines = md.split(/\r?\n/);
+      let html = "";
+      let inList = false;
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) { if (inList) { html += "</ul>"; inList = false; } continue; }
+        // Inline formatting
+        let fmt = line
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*(.+?)\*/g, "<em>$1</em>")
+          .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+        if (line.startsWith("### ")) { if (inList) { html += "</ul>"; inList = false; } html += "<h3>" + fmt.slice(4) + "</h3>"; }
+        else if (line.startsWith("## ")) { if (inList) { html += "</ul>"; inList = false; } html += "<h2>" + fmt.slice(3) + "</h2>"; }
+        else if (line.startsWith("# ")) { if (inList) { html += "</ul>"; inList = false; } html += "<h2>" + fmt.slice(2) + "</h2>"; }
+        else if (line.startsWith("- ") || line.startsWith("* ")) { if (!inList) { html += "<ul>"; inList = true; } html += "<li>" + fmt.slice(2) + "</li>"; }
+        else { if (inList) { html += "</ul>"; inList = false; } html += "<p>" + fmt + "</p>"; }
+      }
+      if (inList) html += "</ul>";
+      return html;
+    }
+
     async function sendToWellbeingCareers() {
       const status = document.getElementById("wbcSendStatus");
       const btn = document.getElementById("sendToWbcBtn");
@@ -757,7 +790,7 @@ Output format: write the full article first, then the metadata fields at the end
         readingTime: document.getElementById("reading-time-content").textContent.trim().replace(/[^0-9]/g, ""),
         excerpt: document.getElementById("excerpt-content").textContent.trim(),
         tags: document.getElementById("tags-content").textContent.trim(),
-        content: document.getElementById("article-content").innerHTML.trim(),
+        content: markdownToHtml(cleanArticleText(document.getElementById("article-content").textContent)),
       };
       if (!payload.title || !payload.content) { status.textContent = "Generate an article first."; status.style.color = "#c0392b"; return; }
 
